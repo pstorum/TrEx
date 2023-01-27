@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Tree Segmentation Visualizer</title>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.js"></script>
+
+    <!-- Uncomment the lines below to include extra p5 libraries, or 
+         use template-all or template-all-min:
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.sound.js"></script>
+    -->
+
+    <script src="init.js" type="text/javascript"></script>
+    <script src="grid.js" type="text/javascript"></script>
+    <script src="sketch.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <div id="flex-container">
+            <div id="sketch-canvas">
+            </div>
+            <div id="sketch-controls">
+                <h2>
+                    Tree Segmentation Visualizer
+                </h2>
+                <p>
+                    Inputs are expected to be images, all of the same size.
+                    <br>
+                    Patch and hierarchy images should be encoded with their respective IDs.
+                    <br>
+                    To inspect a different dataset (i.e. images of different sizes), refresh the page before loading.
+                </p>
+
+                <table id="table-controls">
+                    <tr>
+                        <th></th>
+                        <th>File inputs</th>
+                        <th>Which grid to show</th>
+                    </tr>
+                    <tr>
+                        <th>
+                            Height Levels
+                        </th>
+                        <td>
+                            <input type="file" name="input-grid-height" id="input-grid-height">
+                        </td>
+                        <td>
+                            <input type="radio" name="input-grid-to-show" id="input-show-grid-height">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Patch Labels
+                        </th>
+                        <td>
+                            <input type="file" name="input-grid-patch" id="input-grid-patch">
+                        </td>
+                        <td>
+                            <input type="radio" name="input-grid-to-show" id="input-show-grid-patch">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Hierarchy Labels
+                        </th>
+                        <td>
+                            <input type="file" name="input-grid-hierarchy" id="input-grid-hierarchy">
+                        </td>
+                        <td>
+                            <input type="radio" name="input-grid-to-show" id="input-show-grid-hierarchy">
+                        </td>
+                    </tr>
+                </table>
+
+                <table id="display-info">
+                    <tr>
+                        <th colspan="2">
+                            <h3>
+                                == Selected
+                            </h3>
+                        </th>
+                        <th colspan="2">
+                            <h3>
+                                == Mouse
+                            </h3>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>
+                                Cell coordinates:
+                                <br>
+                                Height level:
+                                <br>
+                                Patch label:
+                                <br>
+                                Hierarchy label:
+                            </p>
+                        </td>
+                        <td>
+                            <span id="display-selected-cell-coords"></span>
+                            <br>
+                            <span id="display-selected-cell-height"></span>
+                            <br>
+                            <span id="display-selected-cell-patch"></span>
+                            <br>
+                            <span id="display-selected-cell-hierarchy"></span>
+                        </td>
+                        <td>
+                            <p>
+                                Cell coordinates:
+                                <br>
+                                Height level:
+                                <br>
+                                Patch label:
+                                <br>
+                                Hierarchy label:
+                            </p>
+                        </td>
+                        <td>
+                            <span id="display-mouse-cell-coords"></span>
+                            <br>
+                            <span id="display-mouse-cell-height"></span>
+                            <br>
+                            <span id="display-mouse-cell-patch"></span>
+                            <br>
+                            <span id="display-mouse-cell-hierarchy"></span>
+                        </td>
+                    </tr>
+                </table>
+                <br>
+                Contained patches[<span id="display-selected-contained-patches-count"></span>]:
+                <br>
+                <textarea name="display-selected-contained-patches" id="display-selected-contained-patches" cols="80" rows="5"></textarea>
+            </div>
+            <div id="treeseg-controls">
+                <h3>Pipeline context</h3>
+                <br>
+                <input id="input-treeseg-run" type="button" value="Run Segmentation"> <span id="display-treeseg-status"></span>
+                <br>
+                <textarea name="input-treeseg-params" id="input-treeseg-params" cols="100" rows="20">
+{
+    "input_file_path": "../sample_data/hard_nno.las",
+
+    "resolution": 0.5,
+    "discretization": 256,
+    "min_height": 64,
+    "gaussian_sigma": 0.7,
+
+    "weight_level_depth": 0.84,
+    "weight_node_depth": 1.07,
+    "weight_shared_ratio": 0.1,
+    "weight_top_distance": 0.77,
+    "weight_centroid_distance": 0.0,
+    "weight_threshold": 0.7,
+
+    "output_folder_name": "../treeseg_output",
+    "save_grid_raster": true,
+    "save_patches_raster": true,
+    "save_partition_raster": true,
+    "save_context_file": true,
+    "espg_string": "EPSG:2027"
+}                    
+                </textarea>
+            </div>
+        </div>
+    </body>
+</html>
