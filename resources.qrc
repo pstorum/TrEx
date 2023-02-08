@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/tree_seg" >
-        <file>icon.png</file>
-    </qresource>
+  <qresource prefix="bar">
+    <file>bar.png</file>
+  </qresource>
 </RCC>

@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/plugins/tree_seg">
+    <file>icon.png</file>
+    <file>bar.png</file>
+  </qresource>
+</RCC>

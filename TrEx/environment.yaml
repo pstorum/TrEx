@@ -11,3 +11,5 @@ dependencies:
   - pillow
   - pdal
   - gdal
+  - geopandas
+  - pyqt

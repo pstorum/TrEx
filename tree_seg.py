@@ -39,6 +39,7 @@ import sys
 from PIL import Image
 from numpy import asarray
 import numpy as np
+import pandas as pd
 
 #from .\TeRx\scripts\test import doEnv
 
@@ -106,7 +107,6 @@ class TreeSeg:
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('TreeSeg', message)
-
 
     def add_action(
         self,
@@ -195,7 +195,6 @@ class TreeSeg:
         # will be set False in run()
         self.first_start = True
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -214,19 +213,32 @@ class TreeSeg:
         else:
             QgsMessageLog.logMessage("Bad File Type")
             return
-            
+        
         change_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\tests\\pipeline_saveall.json")
+        
         f = open(change_file_path)
         data = json.load(f)
         f.close()
+        data['resolution'] = float(self.dlg.resolution.displayText())
+        data['discretization'] = int(self.dlg.discretization.displayText())
+        data['min_height'] = int(self.dlg.min_height.displayText())
+        data['gaussian_sigma'] = float(self.dlg.gaussian_sigma.displayText())
+        data['weight_level_depth'] = float(self.dlg.weight_level_depth.displayText())
+        data['weight_node_depth'] = float(self.dlg.weight_node_depth.displayText())
+        data['weight_shared_ratio'] = float(self.dlg.weight_shared_ratio.displayText())
+        data['weight_top_distance'] = float(self.dlg.weight_top_distance.displayText())
+        data['weight_centroid_distance'] = float(self.dlg.weight_centroid_distance.displayText())
+        data['weight_threshold'] = float(self.dlg.weight_threshold.displayText())
+
         data["input_file_path"] = inputFile
         json_object = json.dumps(data, indent=4)
         with open(change_file_path, "w") as outfile:
             outfile.write(json_object)
 
         subprocess.call([file_path])
-        self.displayImages()
+        
         self.displayTallestTree()
+        self.displayImages()
 
     def getMaxPointsFromFiles(self, gridPath, partitionPath, patchesPath):
 
@@ -246,6 +258,16 @@ class TreeSeg:
       #array goes inner array is row, outer array is column
       grid = asarray(gridPNG)
       
+      #readying up x, y, and z 1-d arrays to make into shapefile.
+      x = []
+      y = []
+      z = []
+      for i in range(gridPNG.height):
+        for j in range(gridPNG.width):
+            x.append(j)
+            y.append(i)
+            z.append(255-grid[i][j])
+
       #using blue + green * 255 to determine patch ID
       partitionR = asarray(partitionPNGR)
       partitionG = asarray(partitionPNGG)
@@ -279,9 +301,12 @@ class TreeSeg:
 
       #remove 0 patch
       partitionMax.pop(0)
-
+      gridPNG.close()
+      partitionPNGR.close()
+      partitionPNGG.close()
+      partitionPNGB.close()
+      patchesPNG.close()
       return partitionMax
-
 
     def getTallestTree(self, maxPoints, N=1):
       maxTree = None
@@ -294,29 +319,44 @@ class TreeSeg:
             maxTree = x
       return maxTree
 
+    def markedTrees(self, maxPoints, tallestTree, gridImg):
+        image = Image.open(gridImg)
+        rgba = image.convert("RGBA")
+        datas = rgba.getdata()
+
+        newImage = []
+
+        for item in datas:
+            newImage.append(item)
+        
+        for x in maxPoints.values():
+            index = x[0] + x[1] * image.width
+            newImage[index] = (255,0,0,255)
+        index = tallestTree[0] + tallestTree[1] * image.width
+        newImage[index] = (75, 255, 75 ,255)
+        rgba.putdata(newImage)
+
+        QgsMessageLog.logMessage(str(os.path.abspath(os.path.dirname(__file__))))
+
+        rgba.save(os.path.join(os.path.abspath(os.path.dirname(__file__)), "treeHeights.png"), "PNG")
+        image.close()
+
     def displayTallestTree(self):
-      gridPath = str(os.path.join(os.path.abspath(os.path.dirname(__file__)), "grid.png"))
-      partitionPath = str(os.path.join(os.path.abspath(os.path.dirname(__file__)), "partition.png"))
-      patchesPath = str(os.path.join(os.path.abspath(os.path.dirname(__file__)), "patches.png"))
+      gridPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\treeseg_output\\grid.png")
+      partitionPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\treeseg_output\\partitions.png")
+      patchesPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\treeseg_output\\patches.png")
       treePartitions = self.getMaxPointsFromFiles(gridPath, partitionPath, patchesPath)
       tallestTree = self.getTallestTree(treePartitions)
-      self.dlg.tallestTree.setText(str(f'X:{tallestTree[0]}\nY:{tallestTree[1]}\nHeight:{tallestTree[2]}'))
+      self.markedTrees(treePartitions, tallestTree, gridPath)
+      self.dlg.tallestTree.setText(str(f'Tallest tree:\n({tallestTree[0]}, {tallestTree[1]}) Height: {tallestTree[2]}\n\nTotal Trees: {len(treePartitions)}'))
       
-        
     def displayImages(self):
-        seg_grid_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\treeseg_output\\grid.png")
-        seg_partitions_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\treeseg_output\\partitions.png")
-        seg_patches_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\treeseg_output\\patches.png")
-        
+        seg_grid_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "treeHeights.png")
+        QgsMessageLog.logMessage(str(seg_grid_path))
+        self.dlg.segGrid.setScaledContents(True)
         self.seg_grid = QPixmap(seg_grid_path)
-        self.seg_partitions = QPixmap(seg_partitions_path)
-        self.seg_patches = QPixmap(seg_patches_path)
-
         self.dlg.segGrid.setPixmap(self.seg_grid)
-        self.dlg.segPartitions.setPixmap(self.seg_partitions)
-        self.dlg.segPatches.setPixmap(self.seg_patches)
         
-
     def saveData(self):
         save_directory = self.dlg.getSaveFile.filePath()
         folder_name = self.dlg.fileSaveName.displayText()

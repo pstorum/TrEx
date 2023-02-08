@@ -73,13 +73,33 @@ def getTallestTree(maxPoints, N=1):
         maxTree = x
   return maxTree
 
+def markedTrees(maxPoints, tallestTree, gridImg):
+  image = Image.open(gridImg)
+  rgba = image.convert("RGBA")
+  datas = rgba.getdata()
+
+  newImage = []
+
+  for item in datas:
+    newImage.append(item)
+
+  for x in maxPoints.values():
+    index = x[0] + x[1] * 208
+    newImage[index] = (255,0,0,255)
+  index = tallestTree[0] + tallestTree[1] * 208
+  newImage[index] = (75, 255, 75 ,255)
+
+  rgba.putdata(newImage)
+  rgba.save("treeHeights.png", "PNG")
+
+
 def treeData():
   treePartitions = getMaxPointsFromFiles('grid.png', 'partition.png', 'patches.png')
   tallestTree = getTallestTree(treePartitions)
+  markedTrees(treePartitions, tallestTree, 'grid.png')
   return tallestTree
-#sys.modules[__name__] = tree_data
-#maxPointsOfPatches = getMaxPointsFromFiles('grid.png', 'partition.png', 'patches.png')
-#print(getTallestTree(maxPointsOfPatches))
+
+treeData()
 
 
 
