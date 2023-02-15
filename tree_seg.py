@@ -24,7 +24,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon, QPixmap
 from qgis.PyQt.QtWidgets import QAction
-from qgis.core import QgsMessageLog
+from qgis.core import QgsMessageLog, QgsVectorLayer, QgsGeometry, QgsPointXY, QgsProject, QgsFeature
 import subprocess
 
 # Initialize Qt resources from file resources.py
@@ -40,6 +40,9 @@ from PIL import Image
 from numpy import asarray
 import numpy as np
 import pandas as pd
+
+import osgeo.ogr as ogr
+import osgeo.osr as osr
 
 #from .\TeRx\scripts\test import doEnv
 
@@ -259,15 +262,21 @@ class TreeSeg:
       grid = asarray(gridPNG)
       
       #readying up x, y, and z 1-d arrays to make into shapefile.
-      x = []
-      y = []
-      z = []
-      for i in range(gridPNG.height):
-        for j in range(gridPNG.width):
-            x.append(j)
-            y.append(i)
-            z.append(255-grid[i][j])
+      xyz = []
+      for i in range(gridPNG.width):
+        for j in range(gridPNG.height):
+          xyz.append((i,j,255-int(grid[j][i])))
 
+      layer = QgsVectorLayer(f"Point?crs=EPSG:3857&field=x:double&field=y:double&field=z:double", "Points", "memory")
+      provider = layer.dataProvider()
+      # Add the points to the layer
+      for i in range(len(xyz)):
+          feature = QgsFeature()
+          feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(xyz[i][0], xyz[i][1])))
+          feature.setAttributes([xyz[i][0], xyz[i][1], xyz[i][2]])
+          provider.addFeatures([feature])
+      # Add the layer to the QGIS project
+      QgsProject.instance().addMapLayer(layer)
       #using blue + green * 255 to determine patch ID
       partitionR = asarray(partitionPNGR)
       partitionG = asarray(partitionPNGG)
