@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1111</width>
-    <height>735</height>
+    <height>889</height>
    </rect>
   </property>
   <property name="palette">
@@ -256,7 +256,7 @@
      <x>30</x>
      <y>550</y>
      <width>401</width>
-     <height>161</height>
+     <height>281</height>
     </rect>
    </property>
    <property name="font">
@@ -774,25 +774,25 @@
     <string>(.las or .laz)</string>
    </property>
   </widget>
-  <widget class="QDialogButtonBox" name="buttonBox">
+  <widget class="QPushButton" name="closeWindow">
    <property name="geometry">
     <rect>
-     <x>910</x>
-     <y>700</y>
-     <width>156</width>
+     <x>980</x>
+     <y>850</y>
+     <width>101</width>
      <height>23</height>
     </rect>
    </property>
    <property name="font">
     <font>
      <family>Segoe UI Semibold</family>
-     <pointsize>8</pointsize>
+     <pointsize>10</pointsize>
      <weight>75</weight>
      <bold>true</bold>
     </font>
    </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   <property name="text">
+    <string>Close</string>
    </property>
   </widget>
  </widget>

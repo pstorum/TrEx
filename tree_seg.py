@@ -36,6 +36,8 @@ import json
 import os
 import shutil
 import sys
+import time
+import random
 from PIL import Image
 from numpy import asarray
 import numpy as np
@@ -238,9 +240,13 @@ class TreeSeg:
         with open(change_file_path, "w") as outfile:
             outfile.write(json_object)
 
+        start_time = time.time()
         subprocess.call([file_path])
-        
-        self.displayTallestTree()
+        end_time = time.time()
+        run_time = end_time - start_time
+        run_time = round(run_time, 3)
+
+        self.displayTallestTree(run_time)
         self.displayImages()
 
     def getMaxPointsFromFiles(self, gridPath, partitionPath, patchesPath):
@@ -260,23 +266,7 @@ class TreeSeg:
       #parse into numpy arrays
       #array goes inner array is row, outer array is column
       grid = asarray(gridPNG)
-      
-      #readying up x, y, and z 1-d arrays to make into shapefile.
-      xyz = []
-      for i in range(gridPNG.width):
-        for j in range(gridPNG.height):
-          xyz.append((i,j,255-int(grid[j][i])))
-
-      layer = QgsVectorLayer(f"Point?crs=EPSG:3857&field=x:double&field=y:double&field=z:double", "Points", "memory")
-      provider = layer.dataProvider()
-      # Add the points to the layer
-      for i in range(len(xyz)):
-          feature = QgsFeature()
-          feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(xyz[i][0], xyz[i][1])))
-          feature.setAttributes([xyz[i][0], xyz[i][1], xyz[i][2]])
-          provider.addFeatures([feature])
-      # Add the layer to the QGIS project
-      QgsProject.instance().addMapLayer(layer)
+    
       #using blue + green * 255 to determine patch ID
       partitionR = asarray(partitionPNGR)
       partitionG = asarray(partitionPNGG)
@@ -308,6 +298,18 @@ class TreeSeg:
             if height > partitionMax[xy][2]:
               partitionMax[xy] = (j,i,height)
 
+      layer = QgsVectorLayer(f"Point?crs=EPSG:3857&field=x:double&field=y:double&field=z:double", "Points", "memory")
+      provider = layer.dataProvider()
+      # Add the points to the layer
+      for i in partitionMax.values():
+          feature = QgsFeature()
+          feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(i[0], i[1])))
+          feature.setAttributes([int(i[0]), int(i[1]), int(i[2])])
+          provider.addFeatures([feature])
+      # Add the layer to the QGIS project
+      QgsProject.instance().addMapLayer(layer)
+
+
       #remove 0 patch
       partitionMax.pop(0)
       gridPNG.close()
@@ -319,49 +321,68 @@ class TreeSeg:
 
     def getTallestTree(self, maxPoints, N=1):
       maxTree = None
+      minTree = None
       for x in maxPoints.values():
         
+        if minTree == None:
+          minTree = x
         if maxTree == None:
           maxTree = x
         else:
           if maxTree[2] < x[2]:
             maxTree = x
-      return maxTree
+          if minTree[2] > x[2]:
+            minTree = x
+      minMaxTree = (minTree, maxTree)
+      return minMaxTree
 
-    def markedTrees(self, maxPoints, tallestTree, gridImg):
+    def markedTrees(self, maxPoints, tallestTree, gridImg, partitionImg):
         image = Image.open(gridImg)
         rgba = image.convert("RGBA")
         datas = rgba.getdata()
 
-        newImage = []
+        partitionR = asarray(Image.open(partitionImg).getchannel('R'))
+        partitionG = asarray(Image.open(partitionImg).getchannel('G'))
+        partitionB = asarray(Image.open(partitionImg).getchannel('B'))
 
-        for item in datas:
-            newImage.append(item)
+        #getting partition labels
+        partition = np.zeros(shape=(partitionR.shape))
+        for i in range(len(partition)):
+            for j in range(len(partition[0])):
+                partition[i][j] = int((partitionR[i][j] << 16) + (partitionG[i][j] << 8) + partitionB[i][j])
         
-        for x in maxPoints.values():
-            index = x[0] + x[1] * image.width
-            newImage[index] = (255,0,0,255)
-        index = tallestTree[0] + tallestTree[1] * image.width
-        newImage[index] = (75, 255, 75 ,255)
+        #setting seed-random values for rgb
+        newImage = []
+        count = 0
+        for _ in datas:
+            id = partition[count//image.width][count%image.width]
+            random.seed(id)
+            r = round(random.random() * 155 + 100)
+            g = round(random.random() * 155 + 100)
+            b = round(random.random() * 155 + 100)
+            if id == 0:
+                r, g, b = 60, 60, 60
+            newImage.append((r,g,b,255))
+            count+=1
+        
         rgba.putdata(newImage)
-
-        QgsMessageLog.logMessage(str(os.path.abspath(os.path.dirname(__file__))))
 
         rgba.save(os.path.join(os.path.abspath(os.path.dirname(__file__)), "treeHeights.png"), "PNG")
         image.close()
 
-    def displayTallestTree(self):
+    def displayTallestTree(self, time):
       gridPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\treeseg_output\\grid.png")
       partitionPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\treeseg_output\\partitions.png")
       patchesPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\treeseg_output\\patches.png")
       treePartitions = self.getMaxPointsFromFiles(gridPath, partitionPath, patchesPath)
-      tallestTree = self.getTallestTree(treePartitions)
-      self.markedTrees(treePartitions, tallestTree, gridPath)
-      self.dlg.tallestTree.setText(str(f'Tallest tree:\n({tallestTree[0]}, {tallestTree[1]}) Height: {tallestTree[2]}\n\nTotal Trees: {len(treePartitions)}'))
+      treeData = self.getTallestTree(treePartitions)
+      tallestTree = treeData[1]
+      shortestTree = treeData[0]
+      self.markedTrees(treePartitions, tallestTree, gridPath, partitionPath)
+      self.dlg.tallestTree.setText(str(f'Tallest tree:\n({tallestTree[0]}, {tallestTree[1]}) Height: {tallestTree[2]}\n\nShortest tree:\n({shortestTree[0]}, {shortestTree[1]}) Height: {shortestTree[2]}\n\nTotal Trees: {len(treePartitions)}\n\nComputation Time: {str(time)} seconds'))
       
     def displayImages(self):
         seg_grid_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "treeHeights.png")
-        QgsMessageLog.logMessage(str(seg_grid_path))
         self.dlg.segGrid.setScaledContents(True)
         self.seg_grid = QPixmap(seg_grid_path)
         self.dlg.segGrid.setPixmap(self.seg_grid)
@@ -381,10 +402,12 @@ class TreeSeg:
         shutil.copy(seg_partitions_path, new_dir)
         shutil.copy(seg_patches_path, new_dir)
 
-        QgsMessageLog.logMessage(str(save_directory))
-        QgsMessageLog.logMessage(str(folder_name))
         return
     
+    def closePlugin(self):
+      dialog = self.dlg
+      dialog.accept()
+
     def run(self):
         """Run method that performs all the real work"""
 
@@ -396,6 +419,7 @@ class TreeSeg:
 
         self.dlg.startSeg.clicked.connect(self.segButton)
         self.dlg.saveAll.clicked.connect(self.saveData)
+        self.dlg.closeWindow.clicked.connect(self.closePlugin)
         
         # show the dialog
         self.dlg.show()

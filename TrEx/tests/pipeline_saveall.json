@@ -1,5 +1,5 @@
 {
-    "input_file_path": "C:\\Users\\junsu\\AppData\\Roaming\\QGIS\\QGIS3\\profiles\\default\\python\\plugins\\tree_seg\\TrEx\\sample_data\\hard_nno.las",
+    "input_file_path": "C:\\Users\\Dench\\Documents\\sample_data\\hard_nno.las",
     "resolution": 0.5,
     "discretization": 256,
     "min_height": 64,
