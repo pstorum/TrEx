@@ -24,7 +24,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon, QPixmap
 from qgis.PyQt.QtWidgets import QAction
-from qgis.core import QgsMessageLog, QgsVectorLayer, QgsGeometry, QgsPointXY, QgsProject, QgsFeature
+from qgis.core import QgsMessageLog, QgsVectorLayer, QgsGeometry, QgsCoordinateTransformContext, QgsPointXY, QgsProject, QgsFeature, QgsVectorFileWriter
 import subprocess
 
 # Initialize Qt resources from file resources.py
@@ -38,11 +38,12 @@ import shutil
 import sys
 import time
 import random
+import processing
 from PIL import Image
 from numpy import asarray
 import numpy as np
 import pandas as pd
-
+from osgeo import gdal, ogr
 import osgeo.ogr as ogr
 import osgeo.osr as osr
 
@@ -309,6 +310,20 @@ class TreeSeg:
       # Add the layer to the QGIS project
       QgsProject.instance().addMapLayer(layer)
 
+      output_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\peak.shp")
+      file_format = "ESRI Shapefile"
+
+      crs = QgsCoordinateTransformContext()
+      options = QgsVectorFileWriter.SaveVectorOptions()
+      options.driverName='ESRI Shapefile'
+
+      #Attempt to stop files CPG PRJ from creation
+      #options.skipAttributeCreation = True
+      #options.layerOptions = ["SPATIAL_INDEX=NONE", "CRS=None"]
+
+      data = QgsVectorFileWriter.writeAsVectorFormatV3(layer, output_file, crs, options)
+      del data
+
 
       #remove 0 patch
       partitionMax.pop(0)
@@ -368,6 +383,29 @@ class TreeSeg:
         rgba.putdata(newImage)
 
         rgba.save(os.path.join(os.path.abspath(os.path.dirname(__file__)), "treeHeights.png"), "PNG")
+
+        output = os.path.join(os.path.abspath(os.path.dirname(__file__)), "output.tif")
+        src_ds = gdal.Open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "treeHeights.png"))
+        driver = gdal.GetDriverByName('GTiff')
+        dst_ds = driver.CreateCopy(output, src_ds)
+
+        src_ds = None
+        dst_ds = None
+
+        img_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "output.tif")
+        shp_path =  os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\crown.shp")
+
+        img_ds = gdal.Open(img_path)
+        shp_ds = ogr.GetDriverByName("ESRI Shapefile").CreateDataSource(shp_path)
+        shp_layer = shp_ds.CreateLayer("layer_name", geom_type=ogr.wkbPolygon)
+        new_field = ogr.FieldDefn("Value", ogr.OFTInteger)
+        shp_layer.CreateField(new_field)
+
+        gdal.Polygonize(img_ds.GetRasterBand(2), None, shp_layer, 0, [])
+
+        shp_ds = None
+        img_ds = None
+
         image.close()
 
     def displayTallestTree(self, time):
