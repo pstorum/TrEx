@@ -46,6 +46,8 @@ import pandas as pd
 from osgeo import gdal, ogr
 import osgeo.ogr as ogr
 import osgeo.osr as osr
+sys.path.append('/TrEx/scripts')
+from .TrEx.scripts.qgis_setup_env import qgis_env
 
 #from .\TeRx\scripts\test import doEnv
 
@@ -63,18 +65,6 @@ class TreeSeg:
         #QgsMessageLog.logMessage(str(sys.path.append(os.path.join(os.getcwd(), 'TrEx/scripts'))))
         #if not os.path.isfile('env-vars.json'):
         #    doEnv()
-
-        env_path =  os.path.join(os.path.abspath(os.path.dirname(__file__)), "env-vars.json")
-        with open(env_path, "r") as f:
-            d = json.loads(f.read())
-
-        for key in os.environ:
-            os.environ.pop(key)
-
-        for key, value in d.items():
-            os.environ[key] = value
-
-
         # Save reference to the QGIS interface
         self.iface = iface
         # initialize plugin directory
@@ -483,6 +473,18 @@ class TreeSeg:
       dialog.accept()
 
     def run(self):
+        if not os.path.exists(os.path.join(os.path.abspath(os.path.dirname(__file__)), "env-vars.json")):
+            qgis_env()
+        
+        env_path =  os.path.join(os.path.abspath(os.path.dirname(__file__)), "env-vars.json")
+        with open(env_path, "r") as f:
+            d = json.loads(f.read())
+
+        for key in os.environ:
+            os.environ.pop(key)
+
+        for key, value in d.items():
+            os.environ[key] = value
         """Run method that performs all the real work"""
 
         # Create the dialog with elements (after translation) and keep reference

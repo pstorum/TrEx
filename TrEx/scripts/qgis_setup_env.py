@@ -1,7 +1,8 @@
 import json
 import os
 
-def doEnv():
-  with open("..\\..\\env-vars.json", "w") as f:
+def qgis_env():
+  with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "..\\..\\env-vars.json"), "w") as f:
     f.write(json.dumps(dict(os.environ)))
-doEnv()
+
+qgis_env()
