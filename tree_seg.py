@@ -249,6 +249,8 @@ class TreeSeg:
 
         self.displayTallestTree(run_time)
         self.displayImages()
+        self.dlg.saveAllCrown.setEnabled(True)
+        self.dlg.saveAllPeak.setEnabled(True)
 
     def getMaxPointsFromFiles(self, gridPath, partitionPath, patchesPath):
 
@@ -425,20 +427,54 @@ class TreeSeg:
         self.seg_grid = QPixmap(seg_grid_path)
         self.dlg.segGrid.setPixmap(self.seg_grid)
         
-    def saveData(self):
-        save_directory = self.dlg.getSaveFile.filePath()
-        folder_name = self.dlg.fileSaveName.displayText()
+    def saveDataPeak(self):
+        save_directory = self.dlg.getSavePeak.filePath()
 
-        seg_grid_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\treeseg_output\\grid.png")
-        seg_partitions_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\treeseg_output\\partitions.png")
-        seg_patches_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\TrEx\\treeseg_output\\patches.png")
+        seg_grid_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\peak.dbf")
+        seg_partitions_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\peak.shp")
+        seg_patches_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\peak.shx")
 
-        new_dir = os.path.join(save_directory, folder_name)
-        os.mkdir(new_dir)
+        filenameDBF = "peak.dbf"
+        filenameSHP = "peak.shp"
+        filenameSHX = "peak.shx"
 
-        shutil.copy(seg_grid_path, new_dir)
-        shutil.copy(seg_partitions_path, new_dir)
-        shutil.copy(seg_patches_path, new_dir)
+        counter = 1
+
+        while os.path.exists(os.path.join(save_directory, filenameDBF)):
+            filenameDBF = f"peak_{counter}.dbf"
+            filenameSHP = f"peak_{counter}.shp"
+            filenameSHX = f"peak_{counter}.shx"
+            counter += 1 
+
+        shutil.copy(seg_grid_path, os.path.join(save_directory, filenameDBF))
+        shutil.copy(seg_partitions_path, os.path.join(save_directory, filenameSHP))
+        shutil.copy(seg_patches_path, os.path.join(save_directory, filenameSHX))
+
+        return
+    
+    def saveDataCrown(self):
+        save_directory = self.dlg.getSaveCrown.filePath()
+
+        seg_grid_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\crown.dbf")
+        seg_partitions_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\crown.shp")
+        seg_patches_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\crown.shx")
+
+        filenameDBF = "crown.dbf"
+        filenameSHP = "crown.shp"
+        filenameSHX = "crown.shx"
+
+        counter = 1
+
+        while os.path.exists(os.path.join(save_directory, filenameDBF)):
+            filenameDBF = f"crown_{counter}.dbf"
+            filenameSHP = f"crown_{counter}.shp"
+            filenameSHX = f"crown_{counter}.shx"
+            counter += 1 
+
+
+        shutil.copy(seg_grid_path, os.path.join(save_directory, filenameDBF))
+        shutil.copy(seg_partitions_path, os.path.join(save_directory, filenameSHP))
+        shutil.copy(seg_patches_path, os.path.join(save_directory, filenameSHX))
 
         return
     
@@ -456,7 +492,8 @@ class TreeSeg:
             self.dlg = TreeSegDialog()
 
         self.dlg.startSeg.clicked.connect(self.segButton)
-        self.dlg.saveAll.clicked.connect(self.saveData)
+        self.dlg.saveAllPeak.clicked.connect(self.saveDataPeak)
+        self.dlg.saveAllCrown.clicked.connect(self.saveDataCrown)
         self.dlg.closeWindow.clicked.connect(self.closePlugin)
         
         # show the dialog
