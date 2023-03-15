@@ -11,3 +11,5 @@ call python ts_cli.py ..\tests\pipeline_saveall.json
 popd
 
 endlocal
+
+pause
