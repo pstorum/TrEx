@@ -62,12 +62,13 @@ class TreeSeg:
             application at run time.
         :type iface: QgsInterface
         """
-        #QgsMessageLog.logMessage(str(sys.path.append(os.path.join(os.getcwd(), 'TrEx/scripts'))))
-        #if not os.path.isfile('env-vars.json'):
-        #    doEnv()
 
-        #if not os.path.exists(os.path.join(os.path.abspath(os.path.dirname(__file__)), "env-vars.json")):
-        #    qgis_env()
+        #env_path =  os.path.join(os.path.abspath(os.path.dirname(__file__)), "Trex\\scripts\\env_qgis_setup.cmd")
+        #subprocess.call([env_path])
+
+        #path1 = os.path.join(os.path.abspath(os.path.dirname(__file__)), "Trex\\scripts\\env-vars.json")
+        #path2 = os.path.join(os.path.abspath(os.path.dirname(__file__)), "env-vars.json")
+        #shutil.copy(path1, path2)
 
         env_path =  os.path.join(os.path.abspath(os.path.dirname(__file__)), "env-vars.json")
         with open(env_path, "r") as f:
@@ -409,6 +410,13 @@ class TreeSeg:
 
         gdal.Polygonize(img_ds.GetRasterBand(2), None, shp_layer, 0, [])
 
+        spatial_ref = img_ds.GetProjection()
+
+        shp_path =  os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\crown.prj")
+        prj_file = open(shp_path, 'w')
+        prj_file.write(spatial_ref)
+        prj_file.close()
+
         shp_ds = None
         img_ds = None
 
@@ -434,13 +442,26 @@ class TreeSeg:
     def saveDataPeak(self):
         save_directory = self.dlg.getSavePeak.filePath()
 
-        seg_grid_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\peak.dbf")
-        seg_partitions_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\peak.shp")
-        seg_patches_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\peak.shx")
+        seg_dbf_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\peak.dbf")
+        seg_shp_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\peak.shp")
+        seg_shx_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\peak.shx")
+        seg_prj_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\peak.shx")
+        
+        filenameDBF = ""
+        filenameSHP = ""
+        filenameSHX = ""
+        filenamePRJ = ""
 
-        filenameDBF = "peak.dbf"
-        filenameSHP = "peak.shp"
-        filenameSHX = "peak.shx"
+        if self.dlg.peakName.text() != "":
+            filenameDBF = str(self.dlg.peakName.text())  + ".dbf"
+            filenameSHP = str(self.dlg.peakName.text())  + ".shp"
+            filenameSHX = str(self.dlg.peakName.text())  + ".shx"
+            filenamePRJ = str(self.dlg.peakName.text())  + ".prj"
+        else:
+            filenameDBF = "peak.dbf"
+            filenameSHP = "peak.shp"
+            filenameSHX = "peak.shx"
+            filenamePRJ = "peak.prj"
 
         counter = 1
 
@@ -448,24 +469,39 @@ class TreeSeg:
             filenameDBF = f"peak_{counter}.dbf"
             filenameSHP = f"peak_{counter}.shp"
             filenameSHX = f"peak_{counter}.shx"
+            filenamePRJ = f"peak_{counter}.prj"
             counter += 1 
 
-        shutil.copy(seg_grid_path, os.path.join(save_directory, filenameDBF))
-        shutil.copy(seg_partitions_path, os.path.join(save_directory, filenameSHP))
-        shutil.copy(seg_patches_path, os.path.join(save_directory, filenameSHX))
+        shutil.copy(seg_dbf_path, os.path.join(save_directory, filenameDBF))
+        shutil.copy(seg_shp_path, os.path.join(save_directory, filenameSHP))
+        shutil.copy(seg_shx_path, os.path.join(save_directory, filenameSHX))
+        shutil.copy(seg_prj_path, os.path.join(save_directory, filenamePRJ))
 
         return
     
     def saveDataCrown(self):
         save_directory = self.dlg.getSaveCrown.filePath()
 
-        seg_grid_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\crown.dbf")
-        seg_partitions_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\crown.shp")
-        seg_patches_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\crown.shx")
+        seg_dbf_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\crown.dbf")
+        seg_shp_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\crown.shp")
+        seg_shx_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\crown.shx")
+        seg_prj_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".\\tempSHP\\crown.prj")
 
-        filenameDBF = "crown.dbf"
-        filenameSHP = "crown.shp"
-        filenameSHX = "crown.shx"
+        filenameDBF = ""
+        filenameSHP = ""
+        filenameSHX = ""
+        filenamePRJ = ""
+
+        if self.dlg.crownName.text() != "":
+            filenameDBF = str(self.dlg.crownName.text())  + ".dbf"
+            filenameSHP = str(self.dlg.crownName.text())  + ".shp"
+            filenameSHX = str(self.dlg.crownName.text())  + ".shx"
+            filenamePRJ = str(self.dlg.crownName.text())  + ".prj"
+        else:
+            filenameDBF = "crown.dbf"
+            filenameSHP = "crown.shp"
+            filenameSHX = "crown.shx"
+            filenamePRJ = "crown.prj"
 
         counter = 1
 
@@ -473,12 +509,14 @@ class TreeSeg:
             filenameDBF = f"crown_{counter}.dbf"
             filenameSHP = f"crown_{counter}.shp"
             filenameSHX = f"crown_{counter}.shx"
+            filenamePRJ = f"crown_{counter}.prj"
             counter += 1 
 
 
-        shutil.copy(seg_grid_path, os.path.join(save_directory, filenameDBF))
-        shutil.copy(seg_partitions_path, os.path.join(save_directory, filenameSHP))
-        shutil.copy(seg_patches_path, os.path.join(save_directory, filenameSHX))
+        shutil.copy(seg_dbf_path, os.path.join(save_directory, filenameDBF))
+        shutil.copy(seg_shp_path, os.path.join(save_directory, filenameSHP))
+        shutil.copy(seg_shx_path, os.path.join(save_directory, filenameSHX))
+        shutil.copy(seg_prj_path, os.path.join(save_directory, filenamePRJ))
 
         return
     

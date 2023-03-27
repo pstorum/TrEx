@@ -1,5 +1,5 @@
 {
-    "input_file_path": "C:\\Users\\Dench\\AppData\\Roaming\\QGIS\\QGIS3\\profiles\\default\\python\\plugins\\Tree-Seg-Plug\\TrEx\\sample_data\\hard_nno.las",
+    "input_file_path": "C:\\Users\\Dench\\AppData\\Roaming\\QGIS\\QGIS3\\profiles\\default\\python\\plugins\\Tree-Seg-Plug\\TrEx\\sample_data\\medium_nno.las",
     "resolution": 0.5,
     "discretization": 256,
     "min_height": 64,
