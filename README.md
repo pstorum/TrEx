@@ -4,19 +4,16 @@ The purpose of this QGIS plugin is to parse a LiDAR(.las or .laz) scan of a fore
 
 # Build Status
 
-1. Data become less and less acurate the larger the given file gets. We think its a problem with the parsing algorithm (/Trex/capi and /Trex/python)
-
-2.The original program which can run on its own, seems to conflict with the plugin build, requiring an initial manual dependency setup. original program is located in /Trex/
-1. The original build is run through a command prompt which needs a conda environment to run
-2. The current fix is that we activate the conda environment and dump the enviroment to a json, then move the json to current working dirrectory of the plugin
-      /Trex/scripts/qgis_setup_env.py
-      /Trex/scripts/env_qgis_setump.cmd
-3. This has to be done before the program launchs because we need the enviroment dump to be done while the conda env is active
-4. The plugin in tree_seg.py in __init__ of TreeSeg class will then use the env_vars.json to create the env for the the plugin to run
+1. Data become less and less acurate the larger the given file gets. We think its a problem with the parsing algorithm (/Trex/capi) and (/Trex/python)<br>
+2. The original program which can run on its own, seems to conflict with the plugin build, requiring an initial manual dependency setup (see below). original program is located in /Trex/<br><br>
+            a. The original build is run through a command prompt which needs a conda environment to run. The current fix is that we activate the conda environment and dump the enviroment to a json, then move the json to current working dirrectory of the plugin.<br>  
+            `/Trex/scripts/qgis_setup_env.py`<br>
+            `/Trex/scripts/env_qgis_setump.cmd`<br><br>
+      b. This has to be done before the program launchs because we need the enviroment dump to be done while the conda env is active. The first lines in tree_seg.py in __init__ of TreeSeg class will then use the env_vars.json to create the env for the the plugin to run
       
-      # Possible Solutions
-      1. Bundle all dependency libraries with code directly
-      2. Package all of /Trex/ into an executable, that the plugin runs when it needs access
+            Possible Solutions
+            1. Bundle all dependency libraries with code directly
+            2. Package all of /Trex/ into an executable, that the plugin runs when it needs access
 
 # Installation
 
