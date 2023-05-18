@@ -49,7 +49,7 @@ Download our plugin as .zip
 
 # Using the plugin
 
-1. Open QGIS (Note: If you get an write error, you may have to run the program as admin)
+1. Open QGIS (Note: If you get a write error, you may have to run the program as admin)
 2. Open the plugin
 3. Select a .las or .laz file to start segmenting.
 4. Set your parameters and press start segmentation.
