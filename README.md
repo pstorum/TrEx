@@ -19,11 +19,11 @@ The purpose of this QGIS plugin is to parse a LiDAR(.las or .laz) scan of a fore
 
 <h3> Download and Install:</h3>
 
-      https://www.qgis.org/en/site/
+[QGIS](https://www.qgis.org/en/site/)
 
-      https://www.anaconda.com/
+[Anaconda](https://www.anaconda.com/)
 
-      Download our plugin as .zip
+Download our plugin as .zip
 
 1. After installing Anaconda be sure to set system environment variables.
 
