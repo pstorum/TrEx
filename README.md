@@ -49,11 +49,12 @@ Download our plugin as .zip
 
 # Using the plugin
 
-1. Open the plugin
-2. Select a .las or .laz file to start segmenting.
-3. Set your parameters and press start segmentation.
-4. Depending on the size of the LiDAR file used, computation time will vary.
-5. Save the data a Shape file for direct use within QGIS.
+1. Open QGIS (Note: If you get an write error, you may have to run the program as admin)
+2. Open the plugin
+3. Select a .las or .laz file to start segmenting.
+4. Set your parameters and press start segmentation.
+5. Depending on the size of the LiDAR file used, computation time will vary.
+6. Save the data a Shape file for direct use within QGIS.
 
 
 # Manual Dependency Setup
