@@ -65,3 +65,10 @@ Download our plugin as .zip
 5. Run "env_qgis_setup"
 6. A new file should be created called "env_vars.json"
 7. Move that file to the main working directory of the plugin. "/Tree-Seg_Plug"
+
+# Credits
+Junsu Lee - leejuns@oregonstate.edu<br>
+Kaiyuan Liu - liukaiy@oregonstate.edu<br>
+Peter Storum - storump@oregonstate.edu<br>
+
+(Note: Feel free to contact for assistance up to the end of 2023)
