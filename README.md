@@ -1,4 +1,4 @@
-# Tree Segementation for Aerial Point Clouds
+# Tree Segementation of Aerial Point Clouds
 
 The purpose of this QGIS plugin is to parse a LiDAR(.las or .laz) scan of a forested area. After providing our plugin with a scan, we return information about the forest as well as a segmented shape files of the crowns and peaks found in the forest.
 
